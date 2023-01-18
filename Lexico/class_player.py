@@ -1,11 +1,12 @@
 class Player(object):
 
-    def __init__(self, name, done, undone, active, host):
+    def __init__(self, name, active, cur_eng, cur_rus, done, undone):
         self.name = name
+        self.active = active
+        self.cur_eng = cur_eng
+        self.cur_rus = cur_rus
         self.done = done
         self.undone = undone
-        self.active = active
-        self.host = host
 
     # метод вернет имя игрока
     def getName(self):
