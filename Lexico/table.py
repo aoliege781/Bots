@@ -35,11 +35,11 @@ def call_collector(call):
         # create a file in Room, with first player info
         with open('Rooms\\' + room_name + '\\' + 'pl1' + '.txt','w', encoding='utf-8') as file:
             pl1 = Player(call.from_user.id, [], [], False, True)
-            file.write(str(pl1.name) + '\n')
-            file.write(str(pl1.done) + '\n')
-            file.write(str(pl1.undone) + '\n')
-            file.write(str(pl1.active) + '\n')
-            file.write(str(pl1.host) + '\n')
+            file.write(str(pl1.name) + '*')
+            file.write(str(pl1.done) + '*')
+            file.write(str(pl1.undone) + '*')
+            file.write(str(pl1.active) + '*')
+            file.write(str(pl1.host))
         bot.send_message(call.from_user.id ,'Код вашей комнаты -> ' + room_name +'. Игрок, желающий играть с вами, должен отправить этот код боту!')
 
     # if user press 'enter room'
@@ -72,11 +72,11 @@ def enter(message):
             # create a file in Room, with second player info
             with open('Rooms\\' + message.text + '\\' + 'pl2' + '.txt', 'w', encoding='utf-8') as file:
                 pl2 = Player(message.from_user.id, [], [], False, False)
-                file.write(str(pl2.name) + '\n')
-                file.write(str(pl2.done) + '\n')
-                file.write(str(pl2.undone) + '\n')
-                file.write(str(pl2.active) + '\n')
-                file.write(str(pl2.host) + '\n')
+                file.write(str(pl2.name) + '*')
+                file.write(str(pl2.done) + '*')
+                file.write(str(pl2.undone) + '*')
+                file.write(str(pl2.active) + '*')
+                file.write(str(pl2.host))
                 bot.send_message(message.from_user.id, 'Ожидаем создателя комнаты...')
 
             # now bot should send themes to Host to choose
@@ -158,11 +158,11 @@ def write_themes(message):
             # зададим pl1 состояние active - True
             with open('Rooms\\' + c + '\\' + 'pl1.txt', 'w', encoding='utf-8') as pl1:
                 pl1 = Player(message.from_user.id, [], [], True, True)
-                file.write(str(pl1.name) + '\n')
-                file.write(str(pl1.done) + '\n')
-                file.write(str(pl1.undone) + '\n')
-                file.write(str(pl1.active) + '\n')
-                file.write(str(pl1.host) + '\n')
+                file.write(str(pl1.name) + '*')
+                file.write(str(pl1.done) + '*')
+                file.write(str(pl1.undone) + '*')
+                file.write(str(pl1.active) + '*')
+                file.write(str(pl1.host))
 
     else:
         bot.send_message(message.from_user.id, 'Такой темы нет!')
