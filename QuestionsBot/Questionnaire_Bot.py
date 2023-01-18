@@ -110,10 +110,10 @@ def filling(message):
             # writing
             ans_file.write(message.text + '\n')
             # if it is not last answer
-            print('Ответ записан')
+
             if m < (nq-1):
                 # search for next question
-                print('ищу вопрос')
+                
                 for i in range(m+1):
                     qs_file.readline()
                 # send next question
