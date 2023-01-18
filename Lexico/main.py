@@ -1,24 +1,12 @@
 import random
+from class_player import Player
 from class_card import Card
-
-# get File name
-# return list of lines from file
-def getThemes(c):
-    word_list = []
-    with open('Themes\\'+c+'.txt', 'r', encoding='utf-8') as file:
-        while True:
-            a = file.readline()
-            if a != '':
-                word_list.append(a[0:len(a) - 1])
-            else:
-                break
-    return word_list
 
 # get File name
 # return list of lines from file
 def getFile(c):
     word_list = []
-    with open('Rooms\\' + c + '\\Themes.txt', 'r', encoding='utf-8') as file:
+    with open(c+'.txt', 'r', encoding='utf-8') as file:
         while True:
             a = file.readline()
             if a != '':
@@ -26,6 +14,7 @@ def getFile(c):
             else:
                 break
     return word_list
+
 
 
 # get user id
@@ -76,7 +65,7 @@ def random_ten_words(from_sep):
 def get_five_themes():
     themes = []
     while len(themes) != 5:
-        c = random.choice(getThemes('темы'))
+        c = random.choice(getFile('Themes\\темы'))
         if c not in themes:
             themes.append(c)
     return themes
@@ -88,7 +77,7 @@ def get_five_themes():
 def set_cards(themes):
     cards = []
     for i in range(0,5):
-        words = random_ten_words(separate(getThemes(themes[i])))
+        words = random_ten_words(separate(getFile(f'Themes\\{themes[i]}')))
         cards.append(Card(themes[i], words[0], words[1]))
     return cards
 
@@ -107,10 +96,78 @@ def getHost(id):
                 return False
                 break
 
+def getRoom(id):
+    with open('log.txt', 'r', encoding='utf-8') as log:
+        while True:
+            a = log.readline()
+            log_list = a.split('*')
+            if log_list[0] == str(id):
+                return log_list[1]
+                break
+            elif a == '':
+                return False
+                break
+
 # check player`s status
-def getStatus(room,player_id):
-    with open('Rooms\\' + room + '\\' + player_id + '.txt', 'r', encoding='utf-8') as file:
+def getStatus(player_id):
+    room = getRoom(player_id)
+    print('получили письмо')
+    if getHost(id) == False:
+        path_for_create = f'{room}\\pl2'
+    else:
+        path_for_create = f'{room}\\pl1'
+    with open('Rooms\\' + path_for_create + '.txt', 'r', encoding='utf-8') as file:
         s = file.readline()
         pl = s.split('*')
-    return pl[3]
+    return pl[1]
 
+
+
+# creating player file
+def create_pl(room_pl, player):
+    with open('Rooms\\' + room_pl + '.txt', 'w', encoding='utf-8') as file:
+        file.write(str(player[0]) + '\n')
+        file.write(str(player[1]) + '\n')
+        file.write(str(player[2]) + '\n')
+        file.write(str(player[3]) + '\n')
+
+# set player`s cur word and status
+def setCur(pl, eng, rus, status):
+    # get pl file
+    player = getFile(pl)
+    first_line = player[0].split('*')
+    first_line[1] = str(status)
+    player[0] = '*'.join(first_line)
+    player[1] = f'{eng}*{rus}*'
+    with open(pl + '.txt', 'w', encoding='utf-8') as file:
+        file.write(str(player[0]) + '\n')
+        file.write(str(player[1]) + '\n')
+        file.write(str(player[2]) + '\n')
+        file.write(str(player[3]) + '\n')
+
+# chek if correct
+def check(id, mes):
+    room = getRoom(id)
+    if getHost(id) == False:
+        player = getFile(f'Rooms\\{room}\\pl2')
+        path_for_create = f'{room}\\pl2'
+    else:
+        player = getFile(f'Rooms\\{room}\\pl1')
+        path_for_create = f'{room}\\pl1'
+    first_line = player[0].split('*')
+    first_line[1] = 'False'
+    player[0] = '*'.join(first_line)
+    cur_words = player[1].split('*')
+    done_words = player[2].split('*')
+    undone_words = player[3].split('*')
+    # If player is right
+    # we should del cur words
+    if mes == cur_words[1]:
+        done_words.append(mes)
+        player[1] = 'None*None*'
+        player[2] = '*'.join(done_words)
+    else:
+        undone_words.append(mes)
+        player[1] = 'None*None*'
+        player[3] = '*'.join(undone_words)
+    create_pl(path_for_create, player)
