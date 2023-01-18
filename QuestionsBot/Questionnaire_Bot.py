@@ -51,7 +51,7 @@ def call_collector(call):
             m += 1
             exec("b{} = types.InlineKeyboardButton('{}', callback_data='{}')".format(m, i[:20]+'...', m))
             exec("markup.add(b{})".format(m))
-        bot.send_message(call.from_user.id, 'Выберите номер вопроса, который вы хотите исправить', reply_markup=markup)
+        bot.send_message(call.from_user.id, 'Pick a question to edit', reply_markup=markup)
         qs_file.close()
 
     # if call.data == 'number of question' (user pressed the button with question number from above)
