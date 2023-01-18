@@ -107,6 +107,10 @@ def getHost(id):
                 return False
                 break
 
-
-
+# check player`s status
+def getStatus(room,player_id):
+    with open('Rooms\\' + room + '\\' + player_id + '.txt', 'r', encoding='utf-8') as file:
+        s = file.readline()
+        pl = s.split('*')
+    return pl[3]
 
