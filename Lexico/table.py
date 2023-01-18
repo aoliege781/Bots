@@ -33,13 +33,8 @@ def call_collector(call):
         with open('log.txt', 'a', encoding='utf-8') as log:
             log.write(str(call.from_user.id) + '*' + str(room_name) + '*' + 'HOST' + '\n')
         # create a file in Room, with first player info
-        with open('Rooms\\' + room_name + '\\' + 'pl1' + '.txt','w', encoding='utf-8') as file:
-            pl1 = Player(call.from_user.id, [], [], False, True)
-            file.write(str(pl1.name) + '*')
-            file.write(str(pl1.done) + '*')
-            file.write(str(pl1.undone) + '*')
-            file.write(str(pl1.active) + '*')
-            file.write(str(pl1.host))
+        player = [f'{call.from_user.id}*True*','None*None*','None','None']
+        main.create_pl(f'{room_name}\\pl1', player)
         bot.send_message(call.from_user.id ,'Код вашей комнаты -> ' + room_name +'. Игрок, желающий играть с вами, должен отправить этот код боту!')
 
     # if user press 'enter room'
@@ -70,24 +65,21 @@ def enter(message):
             with open('log.txt', 'a', encoding='utf-8') as log:
                 log.write(str(message.from_user.id) + '*' + str(message.text) + '*' + 'GUEST' + '\n')
             # create a file in Room, with second player info
-            with open('Rooms\\' + message.text + '\\' + 'pl2' + '.txt', 'w', encoding='utf-8') as file:
-                pl2 = Player(message.from_user.id, [], [], False, False)
-                file.write(str(pl2.name) + '*')
-                file.write(str(pl2.done) + '*')
-                file.write(str(pl2.undone) + '*')
-                file.write(str(pl2.active) + '*')
-                file.write(str(pl2.host))
-                bot.send_message(message.from_user.id, 'Ожидаем создателя комнаты...')
+            player = [f'{message.from_user.id}*True*','None*None*','None','None']
+            main.create_pl(f'{message.text}\\pl2', player)
+            bot.send_message(message.from_user.id, 'Ожидаем создателя комнаты...')
 
             # now bot should send themes to Host to choose
             # open pl1 file to find host`s id
+
             with open('Rooms\\' + message.text + '\\pl1.txt', 'r', encoding='utf-8') as pl1:
                 # get Themes
-                player = Player(pl1.readline(), pl1.readline(), pl1.readline(), pl1.readline(), pl1.readline())
-                all_themes = main.getThemes('темы')
-                bot.send_message(player.name,'Второй игрок уже в комнате! сейчас вам будет отправлен список тем. Вы должны выбрать 5')
-                bot.send_message(player.name,'Напишите их в пяти разных сообщениях')
-                bot.send_message(player.name, ' | '.join(all_themes))
+                player = pl1.readline().split('*')
+                all_themes = main.getFile('Themes\\темы')
+                bot.send_message(player[0],'Второй игрок уже в комнате! сейчас вам будет отправлен список тем. Вы должны выбрать 5')
+                bot.send_message(player[0],'Напишите их в пяти разных сообщениях')
+                bot.send_message(player[0], ' | '.join(all_themes))
+                # create file for five themes
                 c = open('Rooms\\' + message.text + '\\Themes.txt', 'w', encoding='utf-8')
                 c.close()
 
@@ -125,16 +117,17 @@ def checkIfThemes(message):
 # тут же мы создадим 5 карт и отправим первый вопрос юзеру
 @bot.message_handler(func=checkIfThemes, content_types=['text'])
 def write_themes(message):
-    # получим список тем
-    all_themes = main.getThemes('темы')
+    # get all themes
+    all_themes = main.getFile('Themes\\темы')
+    # if user`s message is in the all_themes
     if message.text in all_themes:
-        c = main.getHost(message.from_user.id) # тут номер комнаты
-        # запись
+        c = main.getHost(message.from_user.id) # number of ROOM if user - HOST
+        # writing
         with open('Rooms\\' + c + '\\Themes.txt', 'a', encoding='utf-8') as file:
             file.write(message.text + '\n')
-        themes = main.getFile(c)
+        themes = main.getFile(f'Rooms\\{c}\\Themes')
         if len(themes) == 5:
-            # создадим карты
+            # create cards
             cards = main.set_cards(themes)
             ind = 0
             for i in cards:
@@ -144,30 +137,35 @@ def write_themes(message):
                     file.write(str(i.rus) + '\n')
                 ind += 1
             with open('Rooms\\' + c + '\\' + 'pl2.txt', 'r', encoding='utf-8') as pl2:
-                sec_pl_id = int(pl2.readline())
+                sec_pl_id = int(pl2.readline().split('*')[0])
             question = random.choice(cards)
             word_eng = question.eng.pop()
             word_rus = question.rus.pop()
             bot.send_message(sec_pl_id, f'Игра началась! Вашему оппоненту отправлено слово {word_eng} из темы {question.theme}. Перевод - {word_rus}')
             bot.send_message(message.from_user.id, f'Игра началась! Ваше первое слово - {word_eng} из темы {question.theme}')
             ind_of_question = cards.index(question)
+            # set user`s cur words
+            main.setCur(f'Rooms\\{c}\\pl1',word_eng, word_rus, True)
+
             with open('Rooms\\' + c + '\\' + 'card' + str(ind_of_question) + '.txt', 'w', encoding='utf-8') as file:
                 file.write(str(question.theme) + '\n')
                 file.write(str(question.eng) + '\n')
                 file.write(str(question.rus) + '\n')
-            # зададим pl1 состояние active - True
-            with open('Rooms\\' + c + '\\' + 'pl1.txt', 'w', encoding='utf-8') as pl1:
-                pl1 = Player(message.from_user.id, [], [], True, True)
-                file.write(str(pl1.name) + '*')
-                file.write(str(pl1.done) + '*')
-                file.write(str(pl1.undone) + '*')
-                file.write(str(pl1.active) + '*')
-                file.write(str(pl1.host))
 
     else:
         bot.send_message(message.from_user.id, 'Такой темы нет!')
 
-#
+#if user active - then message.text will be accepted as answer
+def is_user_active(message):
+    return main.getStatus(message.from_user.id)
+
+# this func will catch user`s answers
+@bot.message_handler(func=is_user_active, content_types=['text'])
+def answering(message):
+    print('разрешили сюда зайти')
+    # we should check if answer is correct or not
+    main.check(message.from_user.id ,message.text)
+
 
 
 # RUN
