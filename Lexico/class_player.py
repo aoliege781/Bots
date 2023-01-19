@@ -1,7 +1,7 @@
 class Player(object):
 
-    def __init__(self, name, active, cur_eng, cur_rus, done, undone):
-        self.name = name
+    def __init__(self, id, active, cur_eng, cur_rus, done, undone):
+        self.id = id
         self.active = active
         self.cur_eng = cur_eng
         self.cur_rus = cur_rus
@@ -9,8 +9,8 @@ class Player(object):
         self.undone = undone
 
     # метод вернет имя игрока
-    def getName(self):
-        return self.name
+    def getId(self):
+        return self.id
 
     # метод вернет слова, которые игрок отгадал
     def getDone(self):
@@ -24,12 +24,10 @@ class Player(object):
     def getActive(self):
         return self.active
 
-    def getHost(self):
-        return self.host
 
     # Set методы
-    def setName(self, name):
-        self.name = name
+    def setName(self, id):
+        self.id = id
 
     def setDone(self, done):
         self.done = done
