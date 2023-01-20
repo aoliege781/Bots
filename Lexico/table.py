@@ -110,10 +110,10 @@ def checkIfThemes(message):
     room = main.getRoom(message.from_user.id)
     if main.getHost(message.from_user.id) and os.path.exists('Rooms\\' + room + '\\Themes.txt')\
 and len(main.getFile(f'Rooms\\{room}\\Themes')) < 2:
-        print('файл с темами существует, тем меньше чем 2 и ты хост')
+        # print('файл с темами существует, тем меньше чем 2 и ты хост')
         return True
     else:
-        print('нельзя хватит темы менять')
+        # print('нельзя хватит темы менять')
         return False
 
 
@@ -174,7 +174,7 @@ def write_themes(message):
 # 1) if player in log
 # 2) if player status == 1
 def checkIfAnswer(message):
-    print(main.getRoom(message.from_user.id))
+    # print(main.getRoom(message.from_user.id))
 
     return main.getStatus(message.from_user.id) == '1' and main.checkLog(message.from_user.id)
 
@@ -195,17 +195,36 @@ def guessing(message):
         pl_numb = 2
     main.setCur(f'Rooms\\{room}\\pl{pl_numb}',' ', ' ', 0)
 
-    next_card = main.getNextWords(message.from_user.id)
-    sec_pl_id = main.getAnotherPlayerId(message.from_user.id)
+    # after get answer - try to remove empty cards
+    main.removeCard(message.from_user.id)
+    # before getting next card
+    # if main.getCards(message.from_user.id) == [] -> no more files
+    cards = main.getCards(message.from_user.id)
+    if len(cards) != 0:
+        next_card = main.getNextWords(message.from_user.id)
+        sec_pl_id = main.getAnotherPlayerId(message.from_user.id)
 
-    bot.send_message(message.from_user.id,f'Вашему оппоненту отправлено слово {next_card[1]} из темы {next_card[0]}. Перевод - {next_card[2]}')
-    bot.send_message(sec_pl_id, f'Ваше слово - {next_card[1]} из темы {next_card[0]}')
+        bot.send_message(message.from_user.id,f'Вашему оппоненту отправлено слово {next_card[1]} из темы {next_card[0]}. Перевод - {next_card[2]}')
+        bot.send_message(sec_pl_id, f'Ваше слово - {next_card[1]} из темы {next_card[0]}')
 
-    if main.getHost(sec_pl_id) == True:
-        pl_numb = 1
+        if main.getHost(sec_pl_id) == True:
+            pl_numb = 1
+        else:
+            pl_numb = 2
+        main.setCur(f'Rooms\\{room}\\pl{pl_numb}',next_card[1],next_card[2], 1)
     else:
-        pl_numb = 2
-    main.setCur(f'Rooms\\{room}\\pl{pl_numb}',next_card[1],next_card[2], 1)
+        for i in range(1,3):
+            pl = main.getFile(f'Rooms\\{room}\\pl{i}')
+            first_line = pl[0].split('*')
+            pl_id = int(first_line[0])
+            done_list = pl[2].split('*')
+            done = ' | '.join(done_list)
+            undone_list = pl[3].split('*')
+            undone = ' | '.join(undone_list)
+            bot.send_message(pl_id, 'Игра окончена! Сейчас я отправлю вам ваши результаты')
+            bot.send_message(pl_id, f'Правильно отгаданные слова: {done}\n Неправильно отгаданные слова: {undone}')
+            main.removeFromLog(first_line[0])
+        # remove players from log
 
 # RUN
 bot.polling(none_stop=True)
