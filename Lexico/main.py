@@ -1,4 +1,4 @@
-import os.path
+import os
 import random
 from class_player import Player
 from class_card import Card
@@ -136,7 +136,7 @@ def setCur(pl, eng, rus, status):
     player[1] = f'{eng}*{rus}*' # engword*rusword*
     addToFile(pl,player,'w')
 
-
+# get all cards
 def getCards(id):
     cards = []
     room = getRoom(id)
@@ -148,7 +148,6 @@ def getCards(id):
         else:
             continue
     return cards
-
 
 # delete last word from card
 # rewrite card
@@ -195,20 +194,65 @@ def checkAnswer(text, id):
     player = getFile(f'Rooms\\{room}\\pl{pl_numb}')
     guess_word = player[1].split('*')
     if text == guess_word[1]:
-        player[2] = player[2] + text + '*'
+        player[2] = player[2] + guess_word[0] + '*'
     else:
-        player[3] = player[3] + text + '*'
+        player[3] = player[3] + guess_word[0] + '*'
 
     addToFile(f'Rooms\\{room}\\pl{pl_numb}',player,'w')
 
-def rewriteLog(id,info):
+def rewriteLog(id,info): # id - str
     log = getFile('log')
     for i in range(0,len(log)):
-        print(log[i])
         if id in log[i]:
             log[i] = info
         else:
             continue
-    for j in log:
-        print(j)
     addToFile('log',log,'w')
+
+# if len(eng) == 0 -> remove file
+def removeCard(id):
+    # get all existing cards in list
+    cards = getCards(id)
+    for i in cards:
+        # if we found null card in cards
+        if len(i[1]) == 0 and getCardByTheme(id, i[0]) != False:
+            # then we shoul get it`s theme i[0] and get path
+            path = getCardByTheme(id, i[0]) + '.txt'
+            print(os.remove(path))
+            print(type(path))
+            print(path)
+            print('удалил нахуй ',path)
+        else:
+            continue
+
+
+# return path to card
+def getCardByTheme(id, theme):
+    room = getRoom(id)
+    for i in range(0, 2):
+        # if file exists
+        print(i)
+        if os.path.exists(f'Rooms\\{room}\\card{i}.txt'):
+            # then get it and get it`s first line
+            card = getFile(f'Rooms\\{room}\\card{i}')
+            if card[0] == theme:
+                path_to_card = f'Rooms\\{room}\\card{i}'
+                return path_to_card
+            else:
+                continue
+        else:
+            continue
+    else:
+        return False
+
+def removeFromLog(id): # id - str
+    log = getFile('log')
+    for i in range(0,len(log)):
+
+        if id in log[i]:
+            del log[i]
+        else:
+            continue
+
+    addToFile('log',log,'w')
+
