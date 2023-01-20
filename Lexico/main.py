@@ -21,33 +21,48 @@ def getFile(c):
 def addToFile(path, info, mode):
     with open(path + '.txt',f'{mode}',encoding='utf-8') as file:
         for i in info:
-            file.write(i + '\n')
+             file.write(i + '\n')
+
 
 def checkLog(id):
-    log = getFile('log')
-    return str(id) in log
+    try:
+        log = getFile('log')
+        for i in log:
+            if str(id) in i:
+                break
+        return str(id) in i
+    except:
+        return False
 
 def getHost(id):
     log = getFile('log')
+
     for i in log:
         if str(id) in i:
             line_with_id = i.split('*')
             if line_with_id[2] =='HOST':
                 return True
             else:
-                return False
+                continue
         else:
-            return False
+            continue
+    else:
+        return False
 
 def getRoom(id):
-    log = getFile('log')
-    for i in log:
-        if str(id) in i:
-            line_with_id = i.split('*')
-            room = line_with_id[1]
-            return room
+    try:
+        log = getFile('log')
+        for i in log:
+            if str(id) in i:
+                line_with_id = i.split('*')
+                room = line_with_id[1]
+                return room
+            else:
+                continue
         else:
             return False
+    except:
+        return False
 
 def getAnotherPlayerId(id):
     room = getRoom(id)
@@ -58,7 +73,9 @@ def getAnotherPlayerId(id):
             another_id = line_with_id[0]
             return another_id
         else:
-            return False
+            continue
+    else:
+        return False
 
 
 
@@ -76,18 +93,20 @@ def separate(all):
             word_rus.append(all[i])
         else:
             word_eng.append(all[i])
+
+
     return word_eng, word_rus
 
 # метод принимает два листа (eng и rus) из одной темы (результат separate)
 # метод вернет кортеж из 2 листов 5 рандомных eng и 5 рандомных rus
 def random_ten_words(from_sep):
-    word_eng = ''
-    word_rus = ''
+    word_eng = []
+    word_rus = []
     while len(word_eng) != 5:
         ind = random.randint(1, len(from_sep[0])-1)
         if from_sep[0][ind] not in word_eng:
-            word_eng += from_sep[0][ind] + '*'
-            word_rus += from_sep[1][ind] + '*'
+            word_eng.append(from_sep[0][ind])
+            word_rus.append(from_sep[1][ind])
 
     return word_eng, word_rus
 
@@ -95,79 +114,101 @@ def random_ten_words(from_sep):
 # метод вернет лист с 5 картами, в каждой карте есть: Тема, 5 слов на eng и 5 слов на rus
 def set_cards(themes):
     cards = []
-    for i in range(0,5):
+    for i in range(0,2):
         words = random_ten_words(separate(getFile(f'Themes\\{themes[i]}')))
-        cards.append(Card(themes[i], words[0], words[1]))
+        words_string_eng = '*'.join(words[0])
+        words_string_rus = '*'.join(words[1])
+
+        cards.append([themes[i], words_string_eng, words_string_rus])
     return cards
 
-def get_cards(id):
-    room = getRoom(id)
-    cards = []
-    count = 0
-    while len(cards) < 5:
-        cards.append(getFile(f'Rooms\\{room}\\card{count}'))
 
 
-
-# check player`s status
-def getStatus(player_id):
-    room = getRoom(player_id)
-    # print(getHost(id))
-    if os.path.exists(f'Rooms\\{room}\\pl1.txt') or os.path.exists(f'Rooms\\{room}\\pl1.txt'):
-        if getHost(player_id) == room:
-            path_for_create = f'{room}\\pl1'
-        else:
-            path_for_create = f'{room}\\pl2'
-        with open('Rooms\\' + path_for_create + '.txt', 'r', encoding='utf-8') as file:
-            s = file.readline()
-            pl = s.split('*')
-        return pl[1]
-    else:
-        return False
-
-# set True
-def setStatus(path):
-    player = getFile(path)
-    first_line = player[0].split('*')
-    first_line[1] = 'True'
-    player[0] = '*'.join(first_line)
-    # create_pl(path[6:], player)
 
 # set player`s cur word and status
 def setCur(pl, eng, rus, status):
     # get pl file
     player = getFile(pl)
-    first_line = player[0].split('*')
+    first_line = player[0].split('*') # id*status*
     first_line[1] = str(status)
-    player[0] = '*'.join(first_line)
-    player[1] = f'{eng}*{rus}*'
+
+    player[0] = '*'.join(first_line) # id*status*
+    player[1] = f'{eng}*{rus}*' # engword*rusword*
     addToFile(pl,player,'w')
 
-# chek answer and set it done or undone
-def check(id, mes):
+
+def getCards(id):
+    cards = []
     room = getRoom(id)
-    if getHost(id) == False:
-        player = getFile(f'Rooms\\{room}\\pl2')
-        path_for_create = f'{room}\\pl2'
-        setStatus(f'Rooms\\{room}\\pl1')
+    for i in range(0,2):
+        if os.path.exists(f'Rooms\\{room}\\card{i}.txt'):
+            card = getFile(f'Rooms\\{room}\\card{i}')
+            cards.append(card)
+
+        else:
+            continue
+    return cards
+
+
+# delete last word from card
+# rewrite card
+# return two words eng and rus for user
+def getNextWords(id):
+    cards = getCards(id)
+    room = getRoom(id)
+
+    cur_card = random.choice(cards)
+    words_eng = cur_card[1].split('*')
+    words_rus = cur_card[2].split('*')
+    eng = words_eng.pop()
+    rus = words_rus.pop()
+    cur_card[1] = '*'.join(words_eng)
+    cur_card[2] = '*'.join(words_rus)
+    index_cur = cards.index(cur_card)
+
+    addToFile(f'Rooms\\{room}\\card{index_cur}',cur_card,'w')
+
+    return cur_card[0], eng, rus
+
+# get user status
+def getStatus(id):
+    try:
+        room = getRoom(id)
+        if getHost(id) == True:
+            pl_numb = 1
+        else:
+            pl_numb = 2
+
+        player = getFile(f'Rooms\\{room}\\pl{pl_numb}')
+        status = player[0].split('*')
+        return status[1]
+    except:
+         return '0'
+
+def checkAnswer(text, id):
+    room = getRoom(id)
+    if getHost(id) == True:
+        pl_numb = 1
     else:
-        setStatus(f'Rooms\\{room}\\pl2')
-        player = getFile(f'Rooms\\{room}\\pl1')
-        path_for_create = f'{room}\\pl1'
-    first_line = player[0].split('*')
-    first_line[1] = 'False'
-    player[0] = '*'.join(first_line)
-    cur_words = player[1].split('*')
-    done_words = player[2].split('*')
-    undone_words = player[3].split('*')
-    # If player is right
-    # we should del cur words
-    if mes == cur_words[1]:
-        done_words.append(mes)
-        player[1] = 'None*None*'
-        player[2] = '*'.join(done_words)
+        pl_numb = 2
+
+    player = getFile(f'Rooms\\{room}\\pl{pl_numb}')
+    guess_word = player[1].split('*')
+    if text == guess_word[1]:
+        player[2] = player[2] + text + '*'
     else:
-        undone_words.append(mes)
-        player[1] = 'None*None*'
-        player[3] = '*'.join(undone_words)
-    # create_pl(path_for_create, player)
+        player[3] = player[3] + text + '*'
+
+    addToFile(f'Rooms\\{room}\\pl{pl_numb}',player,'w')
+
+def rewriteLog(id,info):
+    log = getFile('log')
+    for i in range(0,len(log)):
+        print(log[i])
+        if id in log[i]:
+            log[i] = info
+        else:
+            continue
+    for j in log:
+        print(j)
+    addToFile('log',log,'w')
