@@ -124,6 +124,7 @@ and len(main.getFile(f'Rooms\\{room}\\Themes')) < 2:
 # 5) create cards
 @bot.message_handler(func=checkIfThemes, content_types=['text'])
 def write_themes(message):
+
     # 1) get all themes
     all_themes = main.getFile('Themes\\темы')
 
@@ -196,13 +197,20 @@ def guessing(message):
     main.setCur(f'Rooms\\{room}\\pl{pl_numb}',' ', ' ', 0)
 
     # after get answer - try to remove empty cards
-    main.removeCard(message.from_user.id)
+    # main.removeCard(message.from_user.id)
     # before getting next card
     # if main.getCards(message.from_user.id) == [] -> no more files
     cards = main.getCards(message.from_user.id)
+
     if len(cards) != 0:
         next_card = main.getNextWords(message.from_user.id)
+        print('снаружи')
+        cards = main.getCards(message.from_user.id)
+        for j in cards:
+            print(j)
         sec_pl_id = main.getAnotherPlayerId(message.from_user.id)
+
+
 
         bot.send_message(message.from_user.id,f'Вашему оппоненту отправлено слово {next_card[1]} из темы {next_card[0]}. Перевод - {next_card[2]}')
         bot.send_message(sec_pl_id, f'Ваше слово - {next_card[1]} из темы {next_card[0]}')
@@ -212,6 +220,9 @@ def guessing(message):
         else:
             pl_numb = 2
         main.setCur(f'Rooms\\{room}\\pl{pl_numb}',next_card[1],next_card[2], 1)
+        cards = main.getCards(message.from_user.id)
+
+
     else:
         for i in range(1,3):
             pl = main.getFile(f'Rooms\\{room}\\pl{i}')
@@ -223,7 +234,7 @@ def guessing(message):
             undone = ' | '.join(undone_list)
             bot.send_message(pl_id, 'Игра окончена! Сейчас я отправлю вам ваши результаты')
             bot.send_message(pl_id, f'Правильно отгаданные слова: {done}\n Неправильно отгаданные слова: {undone}')
-            main.removeFromLog(first_line[0])
+            main.removeFromLog(str(pl_id))
         # remove players from log
 
 # RUN
