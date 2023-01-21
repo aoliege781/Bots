@@ -2,7 +2,6 @@ import random
 import telebot
 from telebot import types
 import main
-from class_player import Player
 import cfg
 import string
 import os
@@ -109,7 +108,7 @@ def enter(message):
 def checkIfThemes(message):
     room = main.getRoom(message.from_user.id)
     if main.getHost(message.from_user.id) and os.path.exists('Rooms\\' + room + '\\Themes.txt')\
-and len(main.getFile(f'Rooms\\{room}\\Themes')) < 2:
+and len(main.getFile(f'Rooms\\{room}\\Themes')) < 5:
         # print('файл с темами существует, тем меньше чем 2 и ты хост')
         return True
     else:
@@ -138,7 +137,7 @@ def write_themes(message):
 
         # 4) if there are five themes
         themes = main.getFile(f'Rooms\\{room}\\Themes')
-        if len(themes) == 2:
+        if len(themes) == 5:
 
             # 5) create cards
 
