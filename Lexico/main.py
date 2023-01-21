@@ -1,7 +1,5 @@
 import os
 import random
-from class_player import Player
-from class_card import Card
 
 # get File name
 # return list of lines from file
@@ -157,15 +155,25 @@ def getNextWords(id):
     room = getRoom(id)
 
     cur_card = random.choice(cards)
+
     words_eng = cur_card[1].split('*')
     words_rus = cur_card[2].split('*')
     eng = words_eng.pop()
     rus = words_rus.pop()
     cur_card[1] = '*'.join(words_eng)
     cur_card[2] = '*'.join(words_rus)
-    index_cur = cards.index(cur_card)
-
-    addToFile(f'Rooms\\{room}\\card{index_cur}',cur_card,'w')
+    theme = cur_card[0]
+    # index_cur = cards.index(cur_card)
+    # print(index_cur)
+    path = getCardByTheme(id,theme)
+    if len(cur_card[1]) == 0:
+        print('я удалил последнее слово')
+        os.remove(getCardByTheme(id, theme)+'.txt')
+        sas = getCards(id)
+        for i in sas:
+            print(i)
+    else:
+        addToFile(path,cur_card,'w')
 
     return cur_card[0], eng, rus
 
@@ -210,20 +218,21 @@ def rewriteLog(id,info): # id - str
     addToFile('log',log,'w')
 
 # if len(eng) == 0 -> remove file
-def removeCard(id):
-    # get all existing cards in list
-    cards = getCards(id)
-    for i in cards:
-        # if we found null card in cards
-        if len(i[1]) == 0 and getCardByTheme(id, i[0]) != False:
-            # then we shoul get it`s theme i[0] and get path
-            path = getCardByTheme(id, i[0]) + '.txt'
-            print(os.remove(path))
-            print(type(path))
-            print(path)
-            print('удалил нахуй ',path)
-        else:
-            continue
+# def removeCard(id):
+#     # get all existing cards in list
+#     cards = getCards(id)
+#
+#     for i in cards:
+#
+#         # if we found null card in cards
+#         if len(i[1]) == 0:
+#             # then we shoul get it`s theme i[0] and get path
+#             path = getCardByTheme(id, i[0]) + '.txt'
+#             print(path)
+#             os.remove(path)
+#
+#         else:
+#             continue
 
 
 # return path to card
@@ -231,7 +240,6 @@ def getCardByTheme(id, theme):
     room = getRoom(id)
     for i in range(0, 2):
         # if file exists
-        print(i)
         if os.path.exists(f'Rooms\\{room}\\card{i}.txt'):
             # then get it and get it`s first line
             card = getFile(f'Rooms\\{room}\\card{i}')
@@ -251,6 +259,7 @@ def removeFromLog(id): # id - str
 
         if id in log[i]:
             del log[i]
+            break
         else:
             continue
 
