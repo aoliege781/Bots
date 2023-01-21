@@ -112,7 +112,7 @@ def random_ten_words(from_sep):
 # метод вернет лист с 5 картами, в каждой карте есть: Тема, 5 слов на eng и 5 слов на rus
 def set_cards(themes):
     cards = []
-    for i in range(0,2):
+    for i in range(0,5):
         words = random_ten_words(separate(getFile(f'Themes\\{themes[i]}')))
         words_string_eng = '*'.join(words[0])
         words_string_rus = '*'.join(words[1])
@@ -138,7 +138,7 @@ def setCur(pl, eng, rus, status):
 def getCards(id):
     cards = []
     room = getRoom(id)
-    for i in range(0,2):
+    for i in range(0,5):
         if os.path.exists(f'Rooms\\{room}\\card{i}.txt'):
             card = getFile(f'Rooms\\{room}\\card{i}')
             cards.append(card)
@@ -198,10 +198,9 @@ def checkAnswer(text, id):
         pl_numb = 1
     else:
         pl_numb = 2
-
     player = getFile(f'Rooms\\{room}\\pl{pl_numb}')
     guess_word = player[1].split('*')
-    if text == guess_word[1]:
+    if text.casefold() in guess_word[1].casefold():
         player[2] = player[2] + guess_word[0] + '*'
     else:
         player[3] = player[3] + guess_word[0] + '*'
@@ -217,28 +216,10 @@ def rewriteLog(id,info): # id - str
             continue
     addToFile('log',log,'w')
 
-# if len(eng) == 0 -> remove file
-# def removeCard(id):
-#     # get all existing cards in list
-#     cards = getCards(id)
-#
-#     for i in cards:
-#
-#         # if we found null card in cards
-#         if len(i[1]) == 0:
-#             # then we shoul get it`s theme i[0] and get path
-#             path = getCardByTheme(id, i[0]) + '.txt'
-#             print(path)
-#             os.remove(path)
-#
-#         else:
-#             continue
-
-
 # return path to card
 def getCardByTheme(id, theme):
     room = getRoom(id)
-    for i in range(0, 2):
+    for i in range(0, 5):
         # if file exists
         if os.path.exists(f'Rooms\\{room}\\card{i}.txt'):
             # then get it and get it`s first line
@@ -256,12 +237,10 @@ def getCardByTheme(id, theme):
 def removeFromLog(id): # id - str
     log = getFile('log')
     for i in range(0,len(log)):
-
         if id in log[i]:
             del log[i]
             break
         else:
             continue
-
     addToFile('log',log,'w')
 
